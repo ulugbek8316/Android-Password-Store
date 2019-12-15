@@ -117,6 +117,8 @@ dependencies {
     implementation deps.androidx.lifecycle
     implementation deps.androidx.lifecycle_java8
     implementation deps.androidx.lifecycle_livedata
+    implementation deps.androidx.lifecycle_runtime
+    implementation deps.androidx.lifecycle_viewmodel
     implementation deps.androidx.material
     implementation deps.androidx.preference
     implementation(deps.androidx.recycler_view) {
@@ -128,10 +130,13 @@ dependencies {
     implementation deps.third_party.commons_io
     implementation deps.third_party.commons_codec
     implementation deps.third_party.epoxy
+    implementation deps.third_party.flow_preferences
     implementation(deps.third_party.jgit) {
         exclude group: 'org.apache.httpcomponents', module: 'httpclient'
     }
     implementation deps.third_party.jsch
+    implementation deps.third_party.koin
+    implementation deps.third_party.koin_viewmodel
     implementation deps.third_party.openpgp_ktx
     implementation deps.third_party.ssh_auth
 

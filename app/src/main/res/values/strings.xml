@@ -5,4 +5,6 @@
     <string name="server_title">Server</string>
     <string name="server_protocol_ssh">SSH</string>
     <string name="server_protocol_https">HTTPS</string>
+    <string name="use_local_directory">Use Local Directory</string>
+    <string name="clone_from_server">Clone From Server</string>
 </resources>
