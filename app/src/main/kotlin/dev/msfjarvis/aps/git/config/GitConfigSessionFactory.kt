@@ -2,7 +2,7 @@
  * Copyright © 2014-2020 The Android Password Store Authors. All Rights Reserved.
  * SPDX-License-Identifier: GPL-3.0-only
  */
-package com.zeapo.pwdstore.git.config
+package dev.msfjarvis.aps.git.config
 
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.JSchException

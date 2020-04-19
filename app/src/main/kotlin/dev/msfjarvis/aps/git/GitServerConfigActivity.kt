@@ -8,14 +8,13 @@ import android.os.Bundle
 import android.os.Handler
 import androidx.core.content.edit
 import androidx.core.os.postDelayed
-import androidx.core.widget.doOnTextChanged
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import com.zeapo.pwdstore.R
 import com.zeapo.pwdstore.databinding.ActivityGitCloneBinding
-import com.zeapo.pwdstore.git.config.ConnectionMode
-import com.zeapo.pwdstore.git.config.Protocol
+import dev.msfjarvis.aps.git.config.ConnectionMode
+import dev.msfjarvis.aps.git.config.Protocol
 import com.zeapo.pwdstore.utils.PasswordRepository
+import dev.msfjarvis.aps.git.BaseGitActivity
 import java.io.IOException
 
 /**

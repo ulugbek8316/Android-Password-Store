@@ -2,7 +2,7 @@
  * Copyright © 2014-2020 The Android Password Store Authors. All Rights Reserved.
  * SPDX-License-Identifier: GPL-3.0-only
  */
-package com.zeapo.pwdstore.git
+package dev.msfjarvis.aps.git
 
 import android.content.Intent
 import android.content.SharedPreferences
@@ -14,11 +14,9 @@ import androidx.core.content.edit
 import androidx.core.text.isDigitsOnly
 import androidx.preference.PreferenceManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.zeapo.pwdstore.git.config.ConnectionMode
-import com.zeapo.pwdstore.git.config.Protocol
-import com.zeapo.pwdstore.git.config.SshApiSessionFactory
-import com.zeapo.pwdstore.utils.PasswordRepository
-import com.zeapo.pwdstore.utils.getEncryptedPrefs
+import dev.msfjarvis.aps.git.config.ConnectionMode
+import dev.msfjarvis.aps.git.config.Protocol
+import dev.msfjarvis.aps.git.config.SshApiSessionFactory
 import java.io.File
 import timber.log.Timber
 

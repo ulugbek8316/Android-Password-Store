@@ -2,7 +2,7 @@
  * Copyright © 2014-2020 The Android Password Store Authors. All Rights Reserved.
  * SPDX-License-Identifier: GPL-3.0-only
  */
-package com.zeapo.pwdstore.git
+package dev.msfjarvis.aps.git
 
 import android.content.Intent
 import android.os.Bundle
@@ -12,6 +12,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.zeapo.pwdstore.R
 import com.zeapo.pwdstore.UserPreference
 import com.zeapo.pwdstore.utils.PasswordRepository
+import dev.msfjarvis.aps.R
 
 open class GitOperationActivity : BaseGitActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

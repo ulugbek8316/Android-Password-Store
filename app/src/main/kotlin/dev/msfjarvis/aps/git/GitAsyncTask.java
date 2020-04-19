@@ -2,14 +2,12 @@
  * Copyright © 2014-2020 The Android Password Store Authors. All Rights Reserved.
  * SPDX-License-Identifier: GPL-3.0-only
  */
-package com.zeapo.pwdstore.git;
+package dev.msfjarvis.aps.git;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
-import com.zeapo.pwdstore.PasswordStore;
-import com.zeapo.pwdstore.R;
 import java.lang.ref.WeakReference;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.GitCommand;
@@ -20,6 +18,8 @@ import org.eclipse.jgit.api.RebaseResult;
 import org.eclipse.jgit.api.StatusCommand;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
+
+import dev.msfjarvis.aps.R;
 
 public class GitAsyncTask extends AsyncTask<GitCommand, Integer, String> {
     private WeakReference<Activity> activityWeakReference;

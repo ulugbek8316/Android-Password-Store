@@ -2,7 +2,7 @@
  * Copyright © 2014-2020 The Android Password Store Authors. All Rights Reserved.
  * SPDX-License-Identifier: GPL-3.0-only
  */
-package com.zeapo.pwdstore.git.config;
+package dev.msfjarvis.aps.git.config;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -17,8 +17,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
-import com.zeapo.pwdstore.R;
-import com.zeapo.pwdstore.git.BaseGitActivity;
+import dev.msfjarvis.aps.git.BaseGitActivity;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import org.eclipse.jgit.errors.UnsupportedCredentialItem;
@@ -38,6 +37,8 @@ import org.openintents.ssh.authentication.request.Request;
 import org.openintents.ssh.authentication.request.SigningRequest;
 import org.openintents.ssh.authentication.request.SshPublicKeyRequest;
 import org.openintents.ssh.authentication.util.SshAuthenticationApiUtils;
+
+import dev.msfjarvis.aps.R;
 
 public class SshApiSessionFactory extends GitConfigSessionFactory {
     /**

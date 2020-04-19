@@ -2,7 +2,7 @@
  * Copyright © 2014-2020 The Android Password Store Authors. All Rights Reserved.
  * SPDX-License-Identifier: GPL-3.0-only
  */
-package com.zeapo.pwdstore.git
+package dev.msfjarvis.aps.git
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -18,13 +18,14 @@ import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.KeyPair
 import com.zeapo.pwdstore.R
 import com.zeapo.pwdstore.UserPreference
-import com.zeapo.pwdstore.git.config.ConnectionMode
-import com.zeapo.pwdstore.git.config.GitConfigSessionFactory
+import dev.msfjarvis.aps.git.config.ConnectionMode
+import dev.msfjarvis.aps.git.config.GitConfigSessionFactory
 import com.zeapo.pwdstore.git.config.SshApiSessionFactory
-import com.zeapo.pwdstore.git.config.SshConfigSessionFactory
+import dev.msfjarvis.aps.git.config.SshConfigSessionFactory
 import com.zeapo.pwdstore.utils.PasswordRepository
 import com.zeapo.pwdstore.utils.getEncryptedPrefs
 import com.zeapo.pwdstore.utils.requestInputFocusOnView
+import dev.msfjarvis.aps.git.config.SshApiSessionFactory
 import java.io.File
 import org.eclipse.jgit.api.GitCommand
 import org.eclipse.jgit.lib.Repository
@@ -97,10 +98,10 @@ abstract class GitOperation(fileDir: File, internal val callingActivity: Activit
      * @param identity the api identity to use for auth in OpenKeychain connection mode
      */
     fun executeAfterAuthentication(
-        connectionMode: ConnectionMode,
-        username: String,
-        sshKey: File?,
-        identity: SshApiSessionFactory.ApiIdentity?
+      connectionMode: ConnectionMode,
+      username: String,
+      sshKey: File?,
+      identity: SshApiSessionFactory.ApiIdentity?
     ) {
         executeAfterAuthentication(connectionMode, username, sshKey, identity, false)
     }
@@ -115,11 +116,11 @@ abstract class GitOperation(fileDir: File, internal val callingActivity: Activit
      * @param showError show the passphrase edit text in red
      */
     private fun executeAfterAuthentication(
-        connectionMode: ConnectionMode,
-        username: String,
-        sshKey: File?,
-        identity: SshApiSessionFactory.ApiIdentity?,
-        showError: Boolean
+      connectionMode: ConnectionMode,
+      username: String,
+      sshKey: File?,
+      identity: SshApiSessionFactory.ApiIdentity?,
+      showError: Boolean
     ) {
         val encryptedSettings = callingActivity.applicationContext.getEncryptedPrefs("git_operation")
         when (connectionMode) {

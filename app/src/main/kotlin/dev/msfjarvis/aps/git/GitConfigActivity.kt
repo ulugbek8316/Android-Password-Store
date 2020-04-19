@@ -2,14 +2,14 @@
  * Copyright © 2014-2020 The Android Password Store Authors. All Rights Reserved.
  * SPDX-License-Identifier: GPL-3.0-only
  */
-package com.zeapo.pwdstore.git
+package dev.msfjarvis.aps.git
 
 import android.os.Bundle
 import android.util.Patterns
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.zeapo.pwdstore.R
 import com.zeapo.pwdstore.databinding.ActivityGitConfigBinding
 import com.zeapo.pwdstore.utils.PasswordRepository
+import dev.msfjarvis.aps.R
 import org.eclipse.jgit.lib.Constants
 
 class GitConfigActivity : BaseGitActivity() {
