@@ -39,14 +39,11 @@ interface PGPKeyDao {
   fun deleteMultipleKeys(pgpKeyEntities: List<PGPKeyEntity>)
 
   @Query("SELECT * FROM PGPKey")
-  fun getAllKeys(): Flow<List<PGPKeyEntity>>
+  fun getAllKeys(): Flow<PGPKeyEntity>
 
   @Query("SELECT * FROM PGPKey WHERE key_id LIKE :keyId")
   fun getKeyById(keyId: String): Flow<PGPKeyEntity>
 
-  @Query("SELECT * FROM PGPKey WHERE id LIKE :databaseId")
-  fun getKeyByDatabaseId(databaseId: Int?): Flow<PGPKeyEntity>
-
   @Query("SELECT * FROM PGPKey WHERE store_id LIKE :storeId")
-  fun getKeysByStore(storeId: Int?): Flow<List<PGPKeyEntity>>
+  fun getKeysByStore(storeId: Int): Flow<PGPKeyEntity>
 }
