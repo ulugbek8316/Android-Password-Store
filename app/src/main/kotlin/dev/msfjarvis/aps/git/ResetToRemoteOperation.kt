@@ -8,6 +8,7 @@ import android.app.Activity
 import android.content.Intent
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.msfjarvis.aps.R
+import dev.msfjarvis.aps.ng.git.ResetToRemoteOperation
 import java.io.File
 import org.eclipse.jgit.api.AddCommand
 import org.eclipse.jgit.api.FetchCommand

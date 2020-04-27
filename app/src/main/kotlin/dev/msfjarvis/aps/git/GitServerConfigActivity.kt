@@ -11,8 +11,8 @@ import androidx.core.os.postDelayed
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.zeapo.pwdstore.databinding.ActivityGitCloneBinding
-import dev.msfjarvis.aps.git.config.ConnectionMode
-import dev.msfjarvis.aps.git.config.Protocol
+import dev.msfjarvis.aps.ng.git.config.ConnectionMode
+import dev.msfjarvis.aps.ng.git.config.Protocol
 import com.zeapo.pwdstore.utils.PasswordRepository
 import dev.msfjarvis.aps.git.BaseGitActivity
 import java.io.IOException

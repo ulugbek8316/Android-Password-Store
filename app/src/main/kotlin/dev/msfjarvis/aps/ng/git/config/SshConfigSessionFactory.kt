@@ -2,18 +2,13 @@
  * Copyright © 2014-2020 The Android Password Store Authors. All Rights Reserved.
  * SPDX-License-Identifier: GPL-3.0-only
  */
-package dev.msfjarvis.aps.git.config
+package dev.msfjarvis.aps.ng.git.config
 
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.Session
-import dev.msfjarvis.aps.ng.git.config.GitConfigSessionFactory
 import org.eclipse.jgit.errors.UnsupportedCredentialItem
-import org.eclipse.jgit.transport.CredentialItem
-import org.eclipse.jgit.transport.CredentialsProvider
-import org.eclipse.jgit.transport.CredentialsProviderUserInfo
-import org.eclipse.jgit.transport.OpenSshConfig
-import org.eclipse.jgit.transport.URIish
+import org.eclipse.jgit.transport.*
 import org.eclipse.jgit.util.FS
 
 class SshConfigSessionFactory(private val sshKey: String, private val username: String, private val passphrase: String) : GitConfigSessionFactory() {

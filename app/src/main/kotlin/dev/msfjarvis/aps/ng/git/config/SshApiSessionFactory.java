@@ -2,24 +2,24 @@
  * Copyright © 2014-2020 The Android Password Store Authors. All Rights Reserved.
  * SPDX-License-Identifier: GPL-3.0-only
  */
-package dev.msfjarvis.aps.git.config;
+package dev.msfjarvis.aps.ng.git.config;
 
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
+
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
+
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.jcraft.jsch.Identity;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
-import dev.msfjarvis.aps.git.BaseGitActivity;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
+
 import org.eclipse.jgit.errors.UnsupportedCredentialItem;
 import org.eclipse.jgit.transport.CredentialItem;
 import org.eclipse.jgit.transport.CredentialsProvider;
@@ -38,8 +38,11 @@ import org.openintents.ssh.authentication.request.SigningRequest;
 import org.openintents.ssh.authentication.request.SshPublicKeyRequest;
 import org.openintents.ssh.authentication.util.SshAuthenticationApiUtils;
 
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+
 import dev.msfjarvis.aps.R;
-import dev.msfjarvis.aps.ng.git.config.GitConfigSessionFactory;
+import dev.msfjarvis.aps.git.BaseGitActivity;
 
 public class SshApiSessionFactory extends GitConfigSessionFactory {
     /**

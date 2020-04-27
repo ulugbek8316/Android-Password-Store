@@ -2,13 +2,15 @@
  * Copyright © 2014-2020 The Android Password Store Authors. All Rights Reserved.
  * SPDX-License-Identifier: GPL-3.0-only
  */
-package dev.msfjarvis.aps.git
+package dev.msfjarvis.aps.ng.git
 
 import android.annotation.SuppressLint
-import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
 import androidx.core.content.edit
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.preference.PreferenceManager
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -26,8 +28,10 @@ import com.zeapo.pwdstore.utils.PasswordRepository
 import com.zeapo.pwdstore.utils.getEncryptedPrefs
 import com.zeapo.pwdstore.utils.requestInputFocusOnView
 import dev.msfjarvis.aps.git.config.SshApiSessionFactory
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import java.io.File
-import org.eclipse.jgit.api.GitCommand
 import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.transport.SshSessionFactory
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
@@ -38,11 +42,18 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
  * @param fileDir the git working tree directory
  * @param callingActivity the calling activity
  */
-abstract class GitOperation(fileDir: File, internal val callingActivity: Activity) {
-
+abstract class GitOperation(fileDir: File, context: Context) {
     protected val repository: Repository? = PasswordRepository.getRepository(fileDir)
+
+    public val operationResult: LiveData<GitResult> get() = mutableOperationResult
+    internal val mutableOperationResult: MutableLiveData<GitResult> = MutableLiveData()
+    internal val gitTasksExecutor = GitTasksExecutor(context)
+
+    private val job = Job()
+    internal val scope = CoroutineScope(job + Dispatchers.IO)
+    internal val context = context.applicationContext
+
     internal var provider: UsernamePasswordCredentialsProvider? = null
-    internal var command: GitCommand<*>? = null
 
     /**
      * Sets the authentication using user/pwd scheme
@@ -122,7 +133,7 @@ abstract class GitOperation(fileDir: File, internal val callingActivity: Activit
       identity: SshApiSessionFactory.ApiIdentity?,
       showError: Boolean
     ) {
-        val encryptedSettings = callingActivity.applicationContext.getEncryptedPrefs("git_operation")
+        val encryptedSettings = context.applicationContext.getEncryptedPrefs("git_operation")
         when (connectionMode) {
             ConnectionMode.SshKey -> {
                 if (sshKey == null || !sshKey.exists()) {
@@ -256,7 +267,7 @@ abstract class GitOperation(fileDir: File, internal val callingActivity: Activit
     /**
      * Action to execute on error
      */
-    open fun onError(errorMessage: String) {
+    fun clearAuthData(errorMessage: String) {
         // Clear various auth related fields on failure
         if (SshSessionFactory.getInstance() is SshApiSessionFactory) {
             PreferenceManager.getDefaultSharedPreferences(callingActivity.applicationContext)
@@ -270,11 +281,6 @@ abstract class GitOperation(fileDir: File, internal val callingActivity: Activit
                     .edit { remove("https_password") }
         }
     }
-
-    /**
-     * Action to execute on success
-     */
-    open fun onSuccess() {}
 
     companion object {
         const val GET_SSH_KEY_FROM_CLONE = 201

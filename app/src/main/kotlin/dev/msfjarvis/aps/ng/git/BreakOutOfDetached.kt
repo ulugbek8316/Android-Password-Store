@@ -2,20 +2,20 @@
  * Copyright © 2014-2020 The Android Password Store Authors. All Rights Reserved.
  * SPDX-License-Identifier: GPL-3.0-only
  */
-package dev.msfjarvis.aps.git
+package dev.msfjarvis.aps.ng.git
 
 import android.app.Activity
+import android.content.Context
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.msfjarvis.aps.R
-import dev.msfjarvis.aps.ng.git.BreakOutOfDetached
+import org.eclipse.jgit.api.*
 import java.io.File
-import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.api.GitCommand
-import org.eclipse.jgit.api.PushCommand
-import org.eclipse.jgit.api.RebaseCommand
 
-class BreakOutOfDetached(fileDir: File, callingActivity: Activity) : GitOperation(fileDir, callingActivity) {
-  private lateinit var commands: List<GitCommand<out Any>>
+class BreakOutOfDetached(fileDir: File, context: Context) : GitOperation(fileDir, context) {
+  private lateinit var rebaseCommand: RebaseCommand
+  private lateinit var checkoutCreateBranchCommand: CheckoutCommand
+  private lateinit var pushCommand: PushCommand
+  private lateinit var checkoutCommand: CheckoutCommand
 
   /**
    * Sets the command
@@ -25,42 +25,32 @@ class BreakOutOfDetached(fileDir: File, callingActivity: Activity) : GitOperatio
   fun setCommands(): BreakOutOfDetached {
     val git = Git(repository)
     val branchName = "conflicting-master-${System.currentTimeMillis()}"
+    // abort the rebase
+    rebaseCommand = git.rebase().setOperation(RebaseCommand.Operation.ABORT)
+    // git checkout -b conflict-branch
+    checkoutCreateBranchCommand = git.checkout().setCreateBranch(true).setName(branchName)
+    // push the changes
+    pushCommand = git.push().setRemote("origin")
+    // switch back to master
+    checkoutCommand = git.checkout().setName("master")
 
-    this.commands = listOf(
-      // abort the rebase
-      git.rebase().setOperation(RebaseCommand.Operation.ABORT),
-      // git checkout -b conflict-branch
-      git.checkout().setCreateBranch(true).setName(branchName),
-      // push the changes
-      git.push().setRemote("origin"),
-      // switch back to master
-      git.checkout().setName("master")
-    )
     return this
   }
 
   override fun execute() {
     val git = Git(repository)
     if (!git.repository.repositoryState.isRebasing) {
-      MaterialAlertDialogBuilder(callingActivity)
-        .setTitle(callingActivity.resources.getString(R.string.git_abort_and_push_title))
-        .setMessage("The repository is not rebasing, no need to push to another branch")
-        .setPositiveButton(callingActivity.resources.getString(R.string.dialog_ok)) { _, _ ->
-          callingActivity.finish()
-        }.show()
+      val result = GitResult.Error(context.resources.getString(R.string.dialog_ok))
+      mutableOperationResult.postValue(result);
       return
     }
 
-    if (this.provider != null) {
+    if (provider != null) {
       // set the credentials for push command
-      this.commands.forEach { cmd ->
-        if (cmd is PushCommand) {
-          cmd.setCredentialsProvider(this.provider)
-        }
-      }
+      pushCommand.setCredentialsProvider(provider)
     }
-    GitAsyncTask(callingActivity, true, this, null)
-      .execute(*this.commands.toTypedArray())
+
+    gitTasksExecutor.execute(*this.commands.toTypedArray())
   }
 
   override fun onError(errorMessage: String) {

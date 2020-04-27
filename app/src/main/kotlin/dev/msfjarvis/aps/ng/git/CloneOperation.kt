@@ -2,13 +2,10 @@
  * Copyright © 2014-2020 The Android Password Store Authors. All Rights Reserved.
  * SPDX-License-Identifier: GPL-3.0-only
  */
-package dev.msfjarvis.aps.git
+package dev.msfjarvis.aps.ng.git
 
-import android.app.Activity
-import android.content.Intent
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import dev.msfjarvis.aps.R
-import dev.msfjarvis.aps.ng.git.CloneOperation
+import android.content.Context
+import kotlinx.coroutines.launch
 import java.io.File
 import org.eclipse.jgit.api.CloneCommand
 import org.eclipse.jgit.api.Git
@@ -19,7 +16,8 @@ import org.eclipse.jgit.api.Git
  * @param fileDir the git working tree directory
  * @param callingActivity the calling activity
  */
-class CloneOperation(fileDir: File, callingActivity: Activity) : GitOperation(fileDir, callingActivity) {
+class CloneOperation(fileDir: File, context: Context) : GitOperation(fileDir, context) {
+  private lateinit var cloneCommand: CloneCommand
 
   /**
    * Sets the command using the repository uri
@@ -28,7 +26,7 @@ class CloneOperation(fileDir: File, callingActivity: Activity) : GitOperation(fi
    * @return the current object
    */
   fun setCommand(uri: String): CloneOperation {
-    this.command = Git.cloneRepository()
+    cloneCommand = Git.cloneRepository()
       .setCloneAllBranches(true)
       .setDirectory(repository?.workTree)
       .setURI(uri)
@@ -61,19 +59,15 @@ class CloneOperation(fileDir: File, callingActivity: Activity) : GitOperation(fi
   }
 
   override fun execute() {
-    (this.command as? CloneCommand)?.setCredentialsProvider(this.provider)
-    GitAsyncTask(callingActivity, false, this, Intent()).execute(this.command)
+    cloneCommand.setCredentialsProvider(provider)
+
+    scope.launch {
+      val result = gitTasksExecutor.performOperation(cloneCommand)
+      if (result is GitResult.Error) {
+        clearAuthData(result.error)
+      }
+      mutableOperationResult.postValue(result)
+    }
   }
 
-  override fun onError(errorMessage: String) {
-    super.onError(errorMessage)
-    MaterialAlertDialogBuilder(callingActivity)
-      .setTitle(callingActivity.resources.getString(R.string.jgit_error_dialog_title))
-      .setMessage("Error occured during the clone operation, " +
-        callingActivity.resources.getString(R.string.jgit_error_dialog_text) +
-        errorMessage +
-        "\nPlease check the FAQ for possible reasons why this error might occur.")
-      .setPositiveButton(callingActivity.resources.getString(R.string.dialog_ok)) { _, _ -> }
-      .show()
-  }
 }

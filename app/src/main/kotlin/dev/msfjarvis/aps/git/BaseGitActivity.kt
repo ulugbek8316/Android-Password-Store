@@ -14,9 +14,14 @@ import androidx.core.content.edit
 import androidx.core.text.isDigitsOnly
 import androidx.preference.PreferenceManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import dev.msfjarvis.aps.git.config.ConnectionMode
-import dev.msfjarvis.aps.git.config.Protocol
+import dev.msfjarvis.aps.ng.git.config.ConnectionMode
+import dev.msfjarvis.aps.ng.git.config.Protocol
 import dev.msfjarvis.aps.git.config.SshApiSessionFactory
+import dev.msfjarvis.aps.ng.git.BreakOutOfDetached
+import dev.msfjarvis.aps.ng.git.CloneOperation
+import dev.msfjarvis.aps.ng.git.PushOperation
+import dev.msfjarvis.aps.ng.git.ResetToRemoteOperation
+import dev.msfjarvis.aps.ng.git.SyncOperation
 import java.io.File
 import timber.log.Timber
 
@@ -142,7 +147,7 @@ abstract class BaseGitActivity : AppCompatActivity() {
 
             op = when (operation) {
                 REQUEST_CLONE, GitOperation.GET_SSH_KEY_FROM_CLONE -> CloneOperation(localDir, this).setCommand(url)
-                REQUEST_PULL -> PullOperation(localDir, this).setCommand()
+                REQUEST_PULL -> dev.msfjarvis.aps.ng.git.PullOperation(localDir, this).setCommand()
                 REQUEST_PUSH -> PushOperation(localDir, this).setCommand()
                 REQUEST_SYNC -> SyncOperation(localDir, this).setCommands()
                 BREAK_OUT_OF_DETACHED -> BreakOutOfDetached(localDir, this).setCommands()
