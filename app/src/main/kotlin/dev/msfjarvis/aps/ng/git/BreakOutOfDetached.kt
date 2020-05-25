@@ -8,6 +8,7 @@ import android.app.Activity
 import android.content.Context
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.msfjarvis.aps.R
+import kotlinx.coroutines.launch
 import org.eclipse.jgit.api.*
 import java.io.File
 
@@ -50,26 +51,28 @@ class BreakOutOfDetached(fileDir: File, context: Context) : GitOperation(fileDir
       pushCommand.setCredentialsProvider(provider)
     }
 
-    gitTasksExecutor.execute(*this.commands.toTypedArray())
-  }
+    scope.launch {
+      val result = gitTasksExecutor.performOperation(rebaseCommand, checkoutCreateBranchCommand, pushCommand, checkoutCommand)
 
-  override fun onError(errorMessage: String) {
-    MaterialAlertDialogBuilder(callingActivity)
-      .setTitle(callingActivity.resources.getString(R.string.jgit_error_dialog_title))
-      .setMessage("Error occurred when checking out another branch operation $errorMessage")
-      .setPositiveButton(callingActivity.resources.getString(R.string.dialog_ok)) { _, _ ->
-        callingActivity.finish()
-      }.show()
-  }
+      when (result) {
+        is GitResult.Error -> {
+          result.error = """
+          Error occurred when checking out another branch operation,
+          \n ${context.resources.getString(R.string.jgit_error_dialog_text)}
+          \n ${result.error}
+          """.trimIndent()
+        }
 
-  override fun onSuccess() {
-    MaterialAlertDialogBuilder(callingActivity)
-      .setTitle(callingActivity.resources.getString(R.string.git_abort_and_push_title))
-      .setMessage("There was a conflict when trying to rebase. " +
-        "Your local master branch was pushed to another branch named conflicting-master-....\n" +
-        "Use this branch to resolve conflict on your computer")
-      .setPositiveButton(callingActivity.resources.getString(R.string.dialog_ok)) { _, _ ->
-        callingActivity.finish()
-      }.show()
+        is GitResult.Success -> {
+          result.data = """
+            There was a conflict when trying to rebase.
+            \nYour local master branch was pushed to another branch named conflicting-master-....
+            \nUse this branch to resolve conflict on your computer
+          """.trimIndent()
+        }
+      }
+
+      mutableOperationResult.postValue(result)
+    }
   }
 }

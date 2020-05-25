@@ -5,14 +5,14 @@
 package dev.msfjarvis.aps.ng.git.config
 
 enum class Protocol(val pref: String) {
-    Ssh("ssh://"),
-    Https("https://");
+  Ssh("ssh://"),
+  Https("https://");
 
-    companion object {
-        private val map = values().associateBy(Protocol::pref)
-        fun fromString(type: String?): Protocol {
-            return map[type ?: return Ssh]
-                ?: throw IllegalArgumentException("$type is not a valid Protocol")
-        }
+  companion object {
+    private val map = values().associateBy(Protocol::pref)
+    fun fromString(type: String?): Protocol {
+      return map[type ?: return Ssh]
+        ?: throw IllegalArgumentException("$type is not a valid Protocol")
     }
+  }
 }

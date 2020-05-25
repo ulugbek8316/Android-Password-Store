@@ -7,6 +7,6 @@
 package dev.msfjarvis.aps.ng.git
 
 sealed class GitResult {
-  data class Success(val data: String) : GitResult()
+  data class Success(var data: String) : GitResult()
   data class Error(var error: String) : GitResult()
 }

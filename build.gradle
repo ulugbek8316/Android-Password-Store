@@ -10,7 +10,7 @@ buildscript {
     maven { url 'https://plugins.gradle.org/m2/' }
   }
   dependencies {
-    classpath deps.gradle_plugin.android
+    classpath 'com.android.tools.build:gradle:4.1.0-alpha09'
     classpath deps.gradle_plugin.kotlin
   }
 }
