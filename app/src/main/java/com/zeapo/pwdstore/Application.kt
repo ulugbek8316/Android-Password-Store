@@ -10,16 +10,32 @@ import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.github.ajalt.timberkt.Timber.DebugTree
 import com.github.ajalt.timberkt.Timber.plant
 import com.zeapo.pwdstore.git.config.setUpBouncyCastleForSshj
 import com.zeapo.pwdstore.utils.PreferenceKeys
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.time.ExperimentalTime
+import kotlin.time.seconds
 
 @Suppress("Unused")
-class Application : android.app.Application(), SharedPreferences.OnSharedPreferenceChangeListener {
+class Application : android.app.Application(), SharedPreferences.OnSharedPreferenceChangeListener, LifecycleObserver {
 
     private var prefs: SharedPreferences? = null
+    private val requiresAuthentication = MutableLiveData(true)
+    private val job = Job()
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+    private val authTimeout = 15
 
     override fun onCreate() {
         super.onCreate()
@@ -31,6 +47,7 @@ class Application : android.app.Application(), SharedPreferences.OnSharedPrefere
         prefs?.registerOnSharedPreferenceChangeListener(this)
         setNightMode()
         setUpBouncyCastleForSshj()
+        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
     }
 
     override fun onTerminate() {
@@ -39,8 +56,8 @@ class Application : android.app.Application(), SharedPreferences.OnSharedPrefere
     }
 
     override fun onSharedPreferenceChanged(prefs: SharedPreferences, key: String) {
-        if (key == PreferenceKeys.APP_THEME) {
-            setNightMode()
+        when (key) {
+            PreferenceKeys.APP_THEME -> setNightMode()
         }
     }
 
@@ -51,5 +68,23 @@ class Application : android.app.Application(), SharedPreferences.OnSharedPrefere
             "follow_system" -> MODE_NIGHT_FOLLOW_SYSTEM
             else -> MODE_NIGHT_AUTO_BATTERY
         })
+    }
+
+    private fun updateAuthTimeout() {
+    }
+
+    @OptIn(ExperimentalTime::class)
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private fun onPause() {
+        coroutineScope.launch {
+            delay(authTimeout.seconds)
+            requiresAuthentication.postValue(true)
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    private fun onBackground() {
+        job.cancel()
+        requiresAuthentication.postValue(true);
     }
 }
