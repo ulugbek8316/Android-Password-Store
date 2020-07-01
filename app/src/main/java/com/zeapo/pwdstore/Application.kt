@@ -4,12 +4,15 @@
  */
 package com.zeapo.pwdstore
 
+import android.content.Intent
 import android.content.SharedPreferences
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
+import androidx.core.content.edit
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.MutableLiveData
@@ -17,52 +20,60 @@ import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.github.ajalt.timberkt.Timber.DebugTree
+import com.github.ajalt.timberkt.Timber.d
 import com.github.ajalt.timberkt.Timber.plant
 import com.zeapo.pwdstore.git.config.setUpBouncyCastleForSshj
+import com.zeapo.pwdstore.utils.BiometricAuthenticator
 import com.zeapo.pwdstore.utils.PreferenceKeys
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.time.ExperimentalTime
 import kotlin.time.seconds
 
 @Suppress("Unused")
 class Application : android.app.Application(), SharedPreferences.OnSharedPreferenceChangeListener, LifecycleObserver {
 
-    private var prefs: SharedPreferences? = null
-    private val requiresAuthentication = MutableLiveData(true)
+    private lateinit var prefs: SharedPreferences
     private val job = Job()
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
-    private val authTimeout = 15
+    private var authTimeout = 15
+    @Volatile var isAuthEnabled = false
+    @Volatile var requiresAuthentication = true
 
     override fun onCreate() {
         super.onCreate()
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        if (BuildConfig.ENABLE_DEBUG_FEATURES || prefs?.getBoolean(PreferenceKeys.ENABLE_DEBUG_LOGGING, false) ==
-            true) {
+        if (BuildConfig.ENABLE_DEBUG_FEATURES || prefs.getBoolean(PreferenceKeys.ENABLE_DEBUG_LOGGING, false)) {
             plant(DebugTree())
         }
-        prefs?.registerOnSharedPreferenceChangeListener(this)
+        prefs.registerOnSharedPreferenceChangeListener(this)
+        isAuthEnabled = prefs.getBoolean(PreferenceKeys.BIOMETRIC_AUTH, false)
+        if (isAuthEnabled) updateAuthTimeout()
         setNightMode()
         setUpBouncyCastleForSshj()
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
     }
 
     override fun onTerminate() {
-        prefs?.unregisterOnSharedPreferenceChangeListener(this)
+        prefs.unregisterOnSharedPreferenceChangeListener(this)
         super.onTerminate()
     }
 
     override fun onSharedPreferenceChanged(prefs: SharedPreferences, key: String) {
         when (key) {
             PreferenceKeys.APP_THEME -> setNightMode()
+            PreferenceKeys.AUTH_TIMEOUT -> updateAuthTimeout()
+            PreferenceKeys.BIOMETRIC_AUTH -> setAuthentication()
         }
     }
 
     private fun setNightMode() {
-        AppCompatDelegate.setDefaultNightMode(when (prefs?.getString(PreferenceKeys.APP_THEME, getString(R.string.app_theme_def))) {
+        AppCompatDelegate.setDefaultNightMode(when (prefs.getString(PreferenceKeys.APP_THEME, getString(R.string.app_theme_def))) {
             "light" -> MODE_NIGHT_NO
             "dark" -> MODE_NIGHT_YES
             "follow_system" -> MODE_NIGHT_FOLLOW_SYSTEM
@@ -70,21 +81,41 @@ class Application : android.app.Application(), SharedPreferences.OnSharedPrefere
         })
     }
 
-    private fun updateAuthTimeout() {
+    private fun setAuthentication() {
+        isAuthEnabled = prefs.getBoolean(PreferenceKeys.BIOMETRIC_AUTH, false)
+        requiresAuthentication = false
     }
 
-    @OptIn(ExperimentalTime::class)
-    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-    private fun onPause() {
-        coroutineScope.launch {
-            delay(authTimeout.seconds)
-            requiresAuthentication.postValue(true)
+    private fun updateAuthTimeout() {
+        authTimeout = prefs.getInt(PreferenceKeys.AUTH_TIMEOUT, 15)
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private fun onResume() {
+        job.cancel()
+        if (isAuthEnabled && requiresAuthentication) {
+            val intent = Intent(this, AuthActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private fun onBackground() {
+        d { "onBackground $requiresAuthentication" }
         job.cancel()
-        requiresAuthentication.postValue(true);
+        requiresAuthentication = false
+        if (isAuthEnabled) {
+            coroutineScope.launch {
+                delay(authTimeout.seconds)
+                withContext(Dispatchers.Main) {
+                    if (isActive) {
+                        d { "onIsActive $requiresAuthentication" }
+                        requiresAuthentication = true
+                    }
+                }
+            }
+        }
     }
 }

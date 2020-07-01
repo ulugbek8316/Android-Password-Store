@@ -18,6 +18,7 @@ class LaunchActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+/*
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         if (prefs.getBoolean(PreferenceKeys.BIOMETRIC_AUTH, false)) {
             BiometricAuthenticator.authenticate(this) {
@@ -37,6 +38,8 @@ class LaunchActivity : AppCompatActivity() {
         } else {
             startTargetActivity(true)
         }
+*/
+        startTargetActivity(true)
     }
 
     private fun startTargetActivity(noAuth: Boolean) {
