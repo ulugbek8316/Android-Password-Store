@@ -6,6 +6,7 @@ package com.zeapo.pwdstore
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY
@@ -25,6 +26,7 @@ import com.github.ajalt.timberkt.Timber.plant
 import com.zeapo.pwdstore.git.config.setUpBouncyCastleForSshj
 import com.zeapo.pwdstore.utils.BiometricAuthenticator
 import com.zeapo.pwdstore.utils.PreferenceKeys
+import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -39,9 +41,9 @@ import kotlin.time.seconds
 class Application : android.app.Application(), SharedPreferences.OnSharedPreferenceChangeListener, LifecycleObserver {
 
     private lateinit var prefs: SharedPreferences
-    private val job = Job()
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
     private var authTimeout = 15
+    private var job: Job? = null
     @Volatile var isAuthEnabled = false
     @Volatile var requiresAuthentication = true
 
@@ -83,7 +85,6 @@ class Application : android.app.Application(), SharedPreferences.OnSharedPrefere
 
     private fun setAuthentication() {
         isAuthEnabled = prefs.getBoolean(PreferenceKeys.BIOMETRIC_AUTH, false)
-        requiresAuthentication = false
     }
 
     private fun updateAuthTimeout() {
@@ -92,26 +93,26 @@ class Application : android.app.Application(), SharedPreferences.OnSharedPrefere
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     private fun onResume() {
-        job.cancel()
+        job?.cancel()
+        d {"requiresAuthentication $requiresAuthentication isAuthEnabled $isAuthEnabled"}
         if (isAuthEnabled && requiresAuthentication) {
             val intent = Intent(this, AuthActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
+            Handler().postDelayed({ startActivity(intent) }, 300L)
         }
+        requiresAuthentication = false
     }
 
     @OptIn(ExperimentalTime::class)
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private fun onBackground() {
-        d { "onBackground $requiresAuthentication" }
-        job.cancel()
-        requiresAuthentication = false
+        d {"requiresAuthentication $requiresAuthentication isAuthEnabled $isAuthEnabled background"}
         if (isAuthEnabled) {
-            coroutineScope.launch {
+            job = coroutineScope.launch {
                 delay(authTimeout.seconds)
                 withContext(Dispatchers.Main) {
                     if (isActive) {
-                        d { "onIsActive $requiresAuthentication" }
+                        d {"requiresAuthentication $requiresAuthentication isAuthEnabled $isAuthEnabled isActive"}
                         requiresAuthentication = true
                     }
                 }

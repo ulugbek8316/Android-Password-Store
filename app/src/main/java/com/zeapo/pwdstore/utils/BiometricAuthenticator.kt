@@ -19,12 +19,17 @@ import com.zeapo.pwdstore.R
 object BiometricAuthenticator {
     private const val TAG = "BiometricAuthenticator"
     private val handler = Handler()
+    private var biometricPrompt: BiometricPrompt? = null
 
     sealed class Result {
         data class Success(val cryptoObject: BiometricPrompt.CryptoObject?) : Result()
         data class Failure(val code: Int?, val message: CharSequence) : Result()
         object HardwareUnavailableOrDisabled : Result()
         object Cancelled : Result()
+    }
+
+    fun stopAuthentication() {
+        biometricPrompt?.cancelAuthentication()
     }
 
     fun authenticate(
@@ -59,14 +64,14 @@ object BiometricAuthenticator {
                 callback(Result.Success(result.cryptoObject))
             }
         }
-        val biometricPrompt = BiometricPrompt(activity, { handler.post(it) }, authCallback)
+        biometricPrompt = BiometricPrompt(activity, { handler.post(it) }, authCallback)
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
             .setTitle(activity.getString(dialogTitleRes))
             .setDeviceCredentialAllowed(true)
             .build()
         if (BiometricManager.from(activity).canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS ||
             activity.getSystemService<KeyguardManager>()?.isDeviceSecure == true) {
-            biometricPrompt.authenticate(promptInfo)
+            biometricPrompt!!.authenticate(promptInfo)
         } else {
             callback(Result.HardwareUnavailableOrDisabled)
         }
