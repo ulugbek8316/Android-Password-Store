@@ -94,7 +94,6 @@ class Application : android.app.Application(), SharedPreferences.OnSharedPrefere
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     private fun onResume() {
         job?.cancel()
-        d {"requiresAuthentication $requiresAuthentication isAuthEnabled $isAuthEnabled"}
         if (isAuthEnabled && requiresAuthentication) {
             val intent = Intent(this, AuthActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -106,13 +105,11 @@ class Application : android.app.Application(), SharedPreferences.OnSharedPrefere
     @OptIn(ExperimentalTime::class)
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private fun onBackground() {
-        d {"requiresAuthentication $requiresAuthentication isAuthEnabled $isAuthEnabled background"}
         if (isAuthEnabled) {
             job = coroutineScope.launch {
                 delay(authTimeout.seconds)
                 withContext(Dispatchers.Main) {
                     if (isActive) {
-                        d {"requiresAuthentication $requiresAuthentication isAuthEnabled $isAuthEnabled isActive"}
                         requiresAuthentication = true
                     }
                 }
