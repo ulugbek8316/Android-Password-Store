@@ -301,6 +301,8 @@ class UserPreference : AppCompatActivity() {
 
             findPreference<CheckBoxPreference>(PreferenceKeys.ENABLE_DEBUG_LOGGING)?.isVisible = !BuildConfig.ENABLE_DEBUG_FEATURES
 
+            findPreference<EditTextPreference>(PreferenceKeys.BIOMETRIC_AUTH_TIMEOUT)
+
             findPreference<CheckBoxPreference>(PreferenceKeys.BIOMETRIC_AUTH)?.apply {
                 val isFingerprintSupported = BiometricManager.from(requireContext()).canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS
                 if (!isFingerprintSupported) {

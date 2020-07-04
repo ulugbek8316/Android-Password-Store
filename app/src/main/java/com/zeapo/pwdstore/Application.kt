@@ -7,16 +7,13 @@ package com.zeapo.pwdstore
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Handler
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
-import androidx.core.content.edit
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
@@ -24,9 +21,7 @@ import com.github.ajalt.timberkt.Timber.DebugTree
 import com.github.ajalt.timberkt.Timber.d
 import com.github.ajalt.timberkt.Timber.plant
 import com.zeapo.pwdstore.git.config.setUpBouncyCastleForSshj
-import com.zeapo.pwdstore.utils.BiometricAuthenticator
 import com.zeapo.pwdstore.utils.PreferenceKeys
-import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -69,7 +64,7 @@ class Application : android.app.Application(), SharedPreferences.OnSharedPrefere
     override fun onSharedPreferenceChanged(prefs: SharedPreferences, key: String) {
         when (key) {
             PreferenceKeys.APP_THEME -> setNightMode()
-            PreferenceKeys.AUTH_TIMEOUT -> updateAuthTimeout()
+            PreferenceKeys.BIOMETRIC_AUTH_TIMEOUT -> updateAuthTimeout()
             PreferenceKeys.BIOMETRIC_AUTH -> setAuthentication()
         }
     }
@@ -88,7 +83,12 @@ class Application : android.app.Application(), SharedPreferences.OnSharedPrefere
     }
 
     private fun updateAuthTimeout() {
-        authTimeout = prefs.getInt(PreferenceKeys.AUTH_TIMEOUT, 15)
+        authTimeout = try {
+            Integer.parseInt(prefs.getString(PreferenceKeys.BIOMETRIC_AUTH_TIMEOUT, "15") as String)
+        } catch (e: NumberFormatException) {
+            15
+        }
+        d { "Auth timeout update : $authTimeout" }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)

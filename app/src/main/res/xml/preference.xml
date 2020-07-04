@@ -144,6 +144,12 @@
             app:key="biometric_auth"
             app:summary="@string/biometric_auth_summary"
             app:title="@string/biometric_auth_title" />
+        <EditTextPreference
+            android:inputType="number"
+            app:defaultValue="15"
+            app:key="biometric_auth_timeout"
+            app:summary="@string/biometric_auth_timeout_summary"
+            app:title="@string/biometric_auth_timeout_title" />
     </PreferenceCategory>
     <PreferenceCategory app:title="@string/pref_category_title_passwords">
         <EditTextPreference
