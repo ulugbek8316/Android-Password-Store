@@ -143,7 +143,8 @@
             android:configChanges="orientation|keyboardHidden"
             android:theme="@style/DialogLikeTheme"
             android:windowSoftInputMode="adjustNothing" />
-        <activity android:name=".AuthActivity" />
+        <activity android:name=".AuthActivity"
+            android:theme="@style/AuthTheme"/>
     </application>
 
 </manifest>
