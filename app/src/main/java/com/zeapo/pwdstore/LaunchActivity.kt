@@ -14,27 +14,6 @@ class LaunchActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-/*
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        if (prefs.getBoolean(PreferenceKeys.BIOMETRIC_AUTH, false)) {
-            BiometricAuthenticator.authenticate(this) {
-                when (it) {
-                    is BiometricAuthenticator.Result.Success -> {
-                        startTargetActivity(false)
-                    }
-                    is BiometricAuthenticator.Result.HardwareUnavailableOrDisabled -> {
-                        prefs.edit { remove(PreferenceKeys.BIOMETRIC_AUTH) }
-                        startTargetActivity(false)
-                    }
-                    is BiometricAuthenticator.Result.Failure, BiometricAuthenticator.Result.Cancelled -> {
-                        finish()
-                    }
-                }
-            }
-        } else {
-            startTargetActivity(true)
-        }
-*/
         startTargetActivity(true)
     }
 
