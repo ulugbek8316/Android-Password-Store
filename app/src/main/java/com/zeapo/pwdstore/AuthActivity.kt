@@ -9,14 +9,14 @@ import com.zeapo.pwdstore.utils.BiometricAuthenticator
 import com.zeapo.pwdstore.utils.PreferenceKeys
 
 class AuthActivity : AppCompatActivity() {
-    private val application by lazy { getApplication() as Application }
+    private lateinit var application: Application
     private lateinit var prefs: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_auth)
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
-
+        application = getApplication() as Application
         performBiometricAuth()
     }
 

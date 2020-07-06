@@ -14,10 +14,6 @@ class LaunchActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        startTargetActivity(true)
-    }
-
-    private fun startTargetActivity(noAuth: Boolean) {
         if (intent.action == ACTION_DECRYPT_PASS) {
             val decryptIntent = Intent(this, DecryptActivity::class.java)
             decryptIntent.putExtra("NAME", intent.getStringExtra("NAME"))
@@ -29,7 +25,7 @@ class LaunchActivity : AppCompatActivity() {
             startActivity(Intent(this, PasswordStore::class.java))
         }
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-        Handler().postDelayed({ finish() }, if (noAuth) 0L else 500L)
+        finish()
     }
 
     companion object {
