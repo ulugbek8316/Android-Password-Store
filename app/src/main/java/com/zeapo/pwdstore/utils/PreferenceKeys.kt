@@ -4,7 +4,6 @@ object PreferenceKeys {
 
     const val APP_THEME = "app_theme"
     const val APP_VERSION = "app_version"
-    const val BIOMETRIC_AUTH_TIMEOUT = "biometric_auth_timeout"
     const val AUTOFILL_APPS = "autofill_apps"
     const val AUTOFILL_ALWAYS = "autofill_always"
     const val AUTOFILL_DEFAULT = "autofill_default"

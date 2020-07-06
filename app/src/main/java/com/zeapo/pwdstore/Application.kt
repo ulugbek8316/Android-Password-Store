@@ -18,27 +18,14 @@ import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.github.ajalt.timberkt.Timber.DebugTree
-import com.github.ajalt.timberkt.Timber.d
 import com.github.ajalt.timberkt.Timber.plant
 import com.zeapo.pwdstore.git.config.setUpBouncyCastleForSshj
 import com.zeapo.pwdstore.utils.PreferenceKeys
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlin.time.ExperimentalTime
-import kotlin.time.seconds
 
 @Suppress("Unused")
 class Application : android.app.Application(), SharedPreferences.OnSharedPreferenceChangeListener, LifecycleObserver {
 
     private lateinit var prefs: SharedPreferences
-    private val coroutineScope = CoroutineScope(Dispatchers.IO)
-    private var authTimeout = 15
-    private var job: Job? = null
     @Volatile var isAuthEnabled = false
     @Volatile var requiresAuthentication = true
 
@@ -49,8 +36,7 @@ class Application : android.app.Application(), SharedPreferences.OnSharedPrefere
             plant(DebugTree())
         }
         prefs.registerOnSharedPreferenceChangeListener(this)
-        isAuthEnabled = prefs.getBoolean(PreferenceKeys.BIOMETRIC_AUTH, false)
-        if (isAuthEnabled) updateAuthTimeout()
+        setAuthentication()
         setNightMode()
         setUpBouncyCastleForSshj()
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
@@ -64,7 +50,6 @@ class Application : android.app.Application(), SharedPreferences.OnSharedPrefere
     override fun onSharedPreferenceChanged(prefs: SharedPreferences, key: String) {
         when (key) {
             PreferenceKeys.APP_THEME -> setNightMode()
-            PreferenceKeys.BIOMETRIC_AUTH_TIMEOUT -> updateAuthTimeout()
             PreferenceKeys.BIOMETRIC_AUTH -> setAuthentication()
         }
     }
@@ -82,38 +67,18 @@ class Application : android.app.Application(), SharedPreferences.OnSharedPrefere
         isAuthEnabled = prefs.getBoolean(PreferenceKeys.BIOMETRIC_AUTH, false)
     }
 
-    private fun updateAuthTimeout() {
-        authTimeout = try {
-            Integer.parseInt(prefs.getString(PreferenceKeys.BIOMETRIC_AUTH_TIMEOUT, "15") as String)
-        } catch (e: NumberFormatException) {
-            15
-        }
-        d { "Auth timeout update : $authTimeout" }
-    }
-
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     private fun onResume() {
-        job?.cancel()
         if (isAuthEnabled && requiresAuthentication) {
+            requiresAuthentication = false
             val intent = Intent(this, AuthActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            Handler().postDelayed({ startActivity(intent) }, 300L)
+            Handler().postDelayed({ startActivity(intent) }, 100L)
         }
-        requiresAuthentication = false
     }
 
-    @OptIn(ExperimentalTime::class)
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private fun onBackground() {
-        if (isAuthEnabled) {
-            job = coroutineScope.launch {
-                delay(authTimeout.seconds)
-                withContext(Dispatchers.Main) {
-                    if (isActive) {
-                        requiresAuthentication = true
-                    }
-                }
-            }
-        }
+        requiresAuthentication = true
     }
 }
