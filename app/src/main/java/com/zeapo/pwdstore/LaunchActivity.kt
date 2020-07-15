@@ -10,10 +10,10 @@ import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import com.zeapo.pwdstore.crypto.DecryptActivity
 
-class LaunchActivity : AppCompatActivity() {
+class LaunchActivity : BaseActivity() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onResume() {
+        super.onResume()
         if (intent.action == ACTION_DECRYPT_PASS) {
             val decryptIntent = Intent(this, DecryptActivity::class.java)
             decryptIntent.putExtra("NAME", intent.getStringExtra("NAME"))
@@ -25,7 +25,6 @@ class LaunchActivity : AppCompatActivity() {
             startActivity(Intent(this, PasswordStore::class.java))
         }
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-        finish()
     }
 
     companion object {

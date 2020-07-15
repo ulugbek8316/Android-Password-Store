@@ -20,6 +20,7 @@ object BiometricAuthenticator {
     private const val TAG = "BiometricAuthenticator"
     private val handler = Handler()
     private var biometricPrompt: BiometricPrompt? = null
+    public var isAuthenticating: Boolean = false
 
     sealed class Result {
         data class Success(val cryptoObject: BiometricPrompt.CryptoObject?) : Result()
@@ -29,6 +30,7 @@ object BiometricAuthenticator {
     }
 
     fun stopAuthentication() {
+        isAuthenticating = false
         biometricPrompt?.cancelAuthentication()
     }
 
@@ -41,6 +43,7 @@ object BiometricAuthenticator {
             override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                 super.onAuthenticationError(errorCode, errString)
                 tag(TAG).d { "BiometricAuthentication error: errorCode=$errorCode, msg=$errString" }
+                isAuthenticating = false
                 callback(when (errorCode) {
                     BiometricConstants.ERROR_CANCELED, BiometricConstants.ERROR_USER_CANCELED,
                     BiometricConstants.ERROR_NEGATIVE_BUTTON -> {
@@ -56,14 +59,17 @@ object BiometricAuthenticator {
 
             override fun onAuthenticationFailed() {
                 super.onAuthenticationFailed()
+                isAuthenticating = false
                 callback(Result.Failure(null, activity.getString(R.string.biometric_auth_error)))
             }
 
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                 super.onAuthenticationSucceeded(result)
+                isAuthenticating = false
                 callback(Result.Success(result.cryptoObject))
             }
         }
+        isAuthenticating = true
         biometricPrompt = BiometricPrompt(activity, { handler.post(it) }, authCallback)
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
             .setTitle(activity.getString(dialogTitleRes))

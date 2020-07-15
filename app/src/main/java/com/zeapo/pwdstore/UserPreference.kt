@@ -67,7 +67,7 @@ import java.util.TimeZone
 typealias ClickListener = Preference.OnPreferenceClickListener
 typealias ChangeListener = Preference.OnPreferenceChangeListener
 
-class UserPreference : AppCompatActivity() {
+class UserPreference : BaseActivity() {
 
     private lateinit var prefsFragment: PrefsFragment
 

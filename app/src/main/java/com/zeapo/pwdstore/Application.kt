@@ -18,6 +18,7 @@ import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.github.ajalt.timberkt.Timber.DebugTree
+import com.github.ajalt.timberkt.Timber.d
 import com.github.ajalt.timberkt.Timber.plant
 import com.zeapo.pwdstore.git.config.setUpBouncyCastleForSshj
 import com.zeapo.pwdstore.utils.PreferenceKeys
@@ -69,16 +70,15 @@ class Application : android.app.Application(), SharedPreferences.OnSharedPrefere
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     private fun onResume() {
+        d { "onResume : $requiresAuthentication" }
         if (isAuthEnabled && requiresAuthentication) {
             requiresAuthentication = false
-            val intent = Intent(this, AuthActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            Handler().postDelayed({ startActivity(intent) }, 100L)
         }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private fun onBackground() {
+        d { "onBackground" }
         requiresAuthentication = true
     }
 }
