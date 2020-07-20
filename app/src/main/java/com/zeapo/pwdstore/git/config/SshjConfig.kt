@@ -8,6 +8,7 @@ import com.github.ajalt.timberkt.Timber
 import com.github.ajalt.timberkt.d
 import com.hierynomus.sshj.key.KeyAlgorithms
 import com.hierynomus.sshj.transport.cipher.BlockCiphers
+import com.hierynomus.sshj.transport.kex.ExtInfoClientFactory
 import com.hierynomus.sshj.transport.mac.Macs
 import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile
 import java.security.Security
@@ -213,7 +214,8 @@ class SshjConfig : ConfigImpl() {
             ECDHNistP.Factory521(),
             ECDHNistP.Factory384(),
             ECDHNistP.Factory256(),
-            DHGexSHA256.Factory()
+            DHGexSHA256.Factory(),
+            ExtInfoClientFactory()
         )
     }
 
