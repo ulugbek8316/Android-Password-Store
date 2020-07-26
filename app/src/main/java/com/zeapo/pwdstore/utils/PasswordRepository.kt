@@ -6,7 +6,9 @@ package com.zeapo.pwdstore.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.provider.DocumentsContract
 import androidx.core.content.edit
+import androidx.core.net.toUri
 import androidx.preference.PreferenceManager
 import java.io.File
 import java.io.FileFilter
@@ -174,8 +176,13 @@ open class PasswordRepository protected constructor() {
             }
             val dir = getRepositoryDirectory(context)
             // uninitialize the repo if the dir does not exist or is absolutely empty
+            if (settings.getBoolean(PreferenceKeys.GIT_EXTERNAL, false)) {
+                val rootUri = dir.toUri()
+                val rootId = DocumentsContract.getTreeDocumentId(rootUri)
+                val treeUri = DocumentsContract.buildChildDocumentsUriUsingTree(rootUri, rootId)
+            }
             settings.edit {
-                if (!dir.exists() || !dir.isDirectory || dir.listFiles()!!.isEmpty()) {
+                if (!dir.exists() || !dir.isDirectory || dir.listFiles().isEmpty()) {
                     putBoolean(PreferenceKeys.REPOSITORY_INITIALIZED, false)
                 } else {
                     putBoolean(PreferenceKeys.REPOSITORY_INITIALIZED, true)
