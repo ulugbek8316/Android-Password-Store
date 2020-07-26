@@ -6,6 +6,30 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Slightly reduce APK size
+- Always show the parent path in entries
+
+### Fixed
+
+- Properly handle cases where files contain only TOTP secrets and no password
+- Allow creating nested directories directly
+
+## [1.10.1] - 2020-07-23
+
+### Fixed
+
+-   Using long key IDs in .gpg-id no longer leads to a crash
+-   Long key IDs and fingerprints are now correctly forwarded to OpenKeychain
+
+### Added
+
+-   Support for multiple GPG IDs in .gpg-id
+-   Creating an entry in an empty store now lets you select keys to initialize .gpg-id with
+
+## [1.10.0] - 2020-07-22
+
+### Changed
+
 -   A brand new icon to go with our biggest update ever!
 -   Light theme is now a consistent white across the board with ample contrast
 -   XkPassword generator is now easier to use with less configuration options
@@ -32,6 +56,7 @@ All notable changes to this project will be documented in this file.
 -   Support for ed25519/ECDSA SSH keys
 -   Navigate into newly created folders and scroll to newly created passwords
 -   Support per-directory keys
+-   Full pt-BR localization
 
 ## [1.9.2] - 2020-06-30
 
@@ -244,7 +269,11 @@ All notable changes to this project will be documented in this file.
 
 -   Fix elements overlapping.
 
-[Unreleased]: https://github.com/android-password-store/Android-Password-Store/compare/1.9.2...HEAD
+[Unreleased]: https://github.com/android-password-store/Android-Password-Store/compare/1.10.1...HEAD
+
+[1.10.1]: https://github.com/android-password-store/Android-Password-Store/compare/1.10.0...1.10.1
+
+[1.10.0]: https://github.com/android-password-store/Android-Password-Store/compare/1.9.2...1.10.0
 
 [1.9.2]: https://github.com/android-password-store/Android-Password-Store/compare/1.9.1...1.9.2
 
