@@ -4,11 +4,9 @@
  */
 package com.zeapo.pwdstore
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.content.pm.ShortcutInfo.Builder
 import android.content.pm.ShortcutManager
 import android.graphics.drawable.Icon
@@ -26,8 +24,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.content.getSystemService
 import androidx.fragment.app.FragmentManager
@@ -41,7 +37,6 @@ import com.github.ajalt.timberkt.e
 import com.github.ajalt.timberkt.i
 import com.github.ajalt.timberkt.w
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.zeapo.pwdstore.autofill.oreo.AutofillMatcher
 import com.zeapo.pwdstore.autofill.oreo.BrowserAutofillSupportLevel
@@ -159,16 +154,7 @@ class PasswordStore : AppCompatActivity(R.layout.activity_pwdstore) {
             shortcutManager = getSystemService()
         }
 
-        // If user opens app with permission granted then revokes and returns,
-        // prevent attempt to create password list fragment
-        var savedInstance = savedInstanceState
-        if (savedInstanceState != null && (!settings.getBoolean(PreferenceKeys.GIT_EXTERNAL, false) ||
-                ContextCompat.checkSelfPermission(
-                    activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED)) {
-            savedInstance = null
-        }
-        super.onCreate(savedInstance)
+        super.onCreate(savedInstanceState)
 
         // If user is eligible for Oreo autofill, prompt them to switch.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
@@ -227,25 +213,10 @@ class PasswordStore : AppCompatActivity(R.layout.activity_pwdstore) {
 
     public override fun onResume() {
         super.onResume()
-        // do not attempt to checkLocalRepository() if no storage permission: immediate crash
-        if (settings.getBoolean(PreferenceKeys.GIT_EXTERNAL, false)) {
-            hasRequiredStoragePermissions(true)
-        } else {
-            checkLocalRepository()
-        }
+        checkLocalRepository()
         if (settings.getBoolean(PreferenceKeys.SEARCH_ON_START, false) && ::searchItem.isInitialized) {
             if (!searchItem.isActionViewExpanded) {
                 searchItem.expandActionView()
-            }
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        // If request is cancelled, the result arrays are empty.
-        if (requestCode == REQUEST_EXTERNAL_STORAGE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                checkLocalRepository()
             }
         }
     }
@@ -404,9 +375,6 @@ class PasswordStore : AppCompatActivity(R.layout.activity_pwdstore) {
     private fun initializeRepositoryInfo() {
         val externalRepo = settings.getBoolean(PreferenceKeys.GIT_EXTERNAL, false)
         val externalRepoPath = settings.getString(PreferenceKeys.GIT_EXTERNAL_REPO, null)
-        if (externalRepo && !hasRequiredStoragePermissions()) {
-            return
-        }
         if (externalRepo && externalRepoPath != null) {
             val dir = File(externalRepoPath)
             if (dir.exists() && dir.isDirectory &&
@@ -417,36 +385,6 @@ class PasswordStore : AppCompatActivity(R.layout.activity_pwdstore) {
             }
         }
         createRepository()
-    }
-
-    /**
-     * Validates if storage permission is granted, and requests for it if not. The return value
-     * is true if the permission has been granted.
-     */
-    private fun hasRequiredStoragePermissions(checkLocalRepo: Boolean = false): Boolean {
-        return if (ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            != PackageManager.PERMISSION_GRANTED) {
-            Snackbar.make(
-                findViewById(R.id.main_layout),
-                getString(R.string.access_sdcard_text),
-                Snackbar.LENGTH_INDEFINITE
-            ).run {
-                setAction(getString(R.string.snackbar_action_grant)) {
-                    ActivityCompat.requestPermissions(
-                        activity,
-                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                        REQUEST_EXTERNAL_STORAGE
-                    )
-                    dismiss()
-                }
-                show()
-            }
-            false
-        } else {
-            if (checkLocalRepo)
-                checkLocalRepository()
-            true
-        }
     }
 
     private fun checkLocalRepository() {
@@ -886,7 +824,6 @@ class PasswordStore : AppCompatActivity(R.layout.activity_pwdstore) {
         const val REQUEST_ARG_PATH = "PATH"
         const val CLONE_REPO_BUTTON = 401
         const val NEW_REPO_BUTTON = 402
-        private const val REQUEST_EXTERNAL_STORAGE = 50
         private fun isPrintable(c: Char): Boolean {
             val block = UnicodeBlock.of(c)
             return (!Character.isISOControl(c) &&
