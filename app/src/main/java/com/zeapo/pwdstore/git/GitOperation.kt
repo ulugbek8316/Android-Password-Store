@@ -231,7 +231,6 @@ abstract class GitOperation(gitDir: File, internal val callingActivity: AppCompa
                 callingActivity.applicationContext
                     .getEncryptedPrefs("git_operation")
                     .edit {
-                        remove(PreferenceKeys.SSH_KEY_LOCAL_PASSPHRASE)
                         remove(PreferenceKeys.HTTPS_PASSWORD)
                     }
             }
