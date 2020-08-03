@@ -2,9 +2,10 @@
  * Copyright © 2014-2020 The Android Password Store Authors. All Rights Reserved.
  * SPDX-License-Identifier: GPL-3.0-only
  */
-package com.zeapo.pwdstore.git.config
+package com.zeapo.pwdstore.git.sshj
 
 import android.util.Base64
+import androidx.appcompat.app.AppCompatActivity
 import com.github.ajalt.timberkt.d
 import com.github.ajalt.timberkt.w
 import com.zeapo.pwdstore.utils.clear
@@ -48,6 +49,11 @@ sealed class SshAuthData {
         override fun clearCredentials() {
             passphraseFinder.clearPasswords()
         }
+    }
+
+    class OpenKeychain(val activity: AppCompatActivity) : SshAuthData() {
+
+        override fun clearCredentials() {}
     }
 
     abstract fun clearCredentials()
@@ -160,6 +166,13 @@ private class SshjSession(uri: URIish, private val username: String, private val
             is SshAuthData.PublicKeyFile -> {
                 ssh.authPublickey(username, ssh.loadKeys(authData.keyFile.absolutePath, authData.passphraseFinder))
                 authData.passphraseFinder.resetForReuse()
+            }
+            is SshAuthData.OpenKeychain -> {
+                runBlocking {
+                    OpenKeychainKeyProvider(authData.activity).prepareAndUse { provider ->
+                        ssh.authPublickey(username, provider)
+                    }
+                }
             }
         }
         return this

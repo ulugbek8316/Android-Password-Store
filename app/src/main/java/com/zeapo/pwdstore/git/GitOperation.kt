@@ -10,7 +10,6 @@ import android.view.LayoutInflater
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
-import androidx.preference.PreferenceManager
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
@@ -18,10 +17,9 @@ import com.google.android.material.textfield.TextInputLayout
 import com.zeapo.pwdstore.R
 import com.zeapo.pwdstore.UserPreference
 import com.zeapo.pwdstore.git.config.ConnectionMode
-import com.zeapo.pwdstore.git.config.InteractivePasswordFinder
-import com.zeapo.pwdstore.git.config.SshApiSessionFactory
-import com.zeapo.pwdstore.git.config.SshAuthData
-import com.zeapo.pwdstore.git.config.SshjSessionFactory
+import com.zeapo.pwdstore.git.sshj.InteractivePasswordFinder
+import com.zeapo.pwdstore.git.sshj.SshAuthData
+import com.zeapo.pwdstore.git.sshj.SshjSessionFactory
 import com.zeapo.pwdstore.utils.PasswordRepository
 import com.zeapo.pwdstore.utils.PreferenceKeys
 import com.zeapo.pwdstore.utils.getEncryptedPrefs
@@ -162,8 +160,9 @@ abstract class GitOperation(gitDir: File, internal val callingActivity: AppCompa
         return this
     }
 
-    private fun withOpenKeychainAuthentication(username: String, identity: SshApiSessionFactory.ApiIdentity?): GitOperation {
-        SshSessionFactory.setInstance(SshApiSessionFactory(username, identity))
+    private fun withOpenKeychainAuthentication(username: String, activity: AppCompatActivity): GitOperation {
+        val sessionFactory = SshjSessionFactory(username, SshAuthData.OpenKeychain(activity), hostKeyFile)
+        SshSessionFactory.setInstance(sessionFactory)
         this.provider = null
         return this
     }
@@ -188,8 +187,7 @@ abstract class GitOperation(gitDir: File, internal val callingActivity: AppCompa
 
     fun executeAfterAuthentication(
         connectionMode: ConnectionMode,
-        username: String,
-        identity: SshApiSessionFactory.ApiIdentity?
+        username: String
     ) {
         when (connectionMode) {
             ConnectionMode.SshKey -> if (!sshKeyFile.exists()) {
@@ -210,7 +208,7 @@ abstract class GitOperation(gitDir: File, internal val callingActivity: AppCompa
                 withPublicKeyAuthentication(username, GitOperationCredentialFinder(callingActivity,
                     connectionMode)).execute()
             }
-            ConnectionMode.OpenKeychain -> withOpenKeychainAuthentication(username, identity).execute()
+            ConnectionMode.OpenKeychain -> withOpenKeychainAuthentication(username, callingActivity).execute()
             ConnectionMode.Password -> withPasswordAuthentication(
                 username, GitOperationCredentialFinder(callingActivity, connectionMode)).execute()
             ConnectionMode.None -> execute()
@@ -222,20 +220,13 @@ abstract class GitOperation(gitDir: File, internal val callingActivity: AppCompa
      */
     open fun onError(err: Exception) {
         // Clear various auth related fields on failure
-        when (SshSessionFactory.getInstance()) {
-            is SshApiSessionFactory -> {
-                PreferenceManager.getDefaultSharedPreferences(callingActivity.applicationContext)
-                    .edit { remove(PreferenceKeys.SSH_OPENKEYSTORE_KEYID) }
+        callingActivity.applicationContext
+            .getEncryptedPrefs("git_operation")
+            .edit {
+                remove(PreferenceKeys.SSH_KEY_LOCAL_PASSPHRASE)
+                remove(PreferenceKeys.HTTPS_PASSWORD)
+                remove(PreferenceKeys.SSH_OPENKEYSTORE_KEYID)
             }
-            is SshjSessionFactory -> {
-                callingActivity.applicationContext
-                    .getEncryptedPrefs("git_operation")
-                    .edit {
-                        remove(PreferenceKeys.SSH_KEY_LOCAL_PASSPHRASE)
-                        remove(PreferenceKeys.HTTPS_PASSWORD)
-                    }
-            }
-        }
     }
 
     /**

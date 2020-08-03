@@ -116,7 +116,9 @@ dependencies {
         exclude(group = "org.apache.httpcomponents", module = "httpclient")
     }
     implementation(Dependencies.ThirdParty.jsch)
-    implementation(Dependencies.ThirdParty.sshj)
+    implementation(files("../libs/sshj-0.29.1-SNAPSHOT.jar"))
+    implementation("org.bouncycastle:bcpkix-jdk15on:1.65")
+    implementation("net.i2p.crypto:eddsa:0.3.0")
     implementation(Dependencies.ThirdParty.bouncycastle)
     implementation(Dependencies.ThirdParty.plumber)
     implementation(Dependencies.ThirdParty.ssh_auth)

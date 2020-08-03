@@ -19,12 +19,12 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.zeapo.pwdstore.R
 import com.zeapo.pwdstore.git.config.ConnectionMode
 import com.zeapo.pwdstore.git.config.Protocol
-import com.zeapo.pwdstore.git.config.SshApiSessionFactory
 import com.zeapo.pwdstore.utils.PasswordRepository
 import com.zeapo.pwdstore.utils.PreferenceKeys
 import com.zeapo.pwdstore.utils.getEncryptedPrefs
 import java.io.File
 import java.net.URI
+import org.openintents.ssh.authentication.SshAuthenticationApi
 
 /**
  * Abstract AppCompatActivity that holds some information that is commonly shared across git-related
@@ -42,8 +42,6 @@ abstract class BaseGitActivity : AppCompatActivity() {
     lateinit var username: String
     lateinit var email: String
     lateinit var branch: String
-    private var identityBuilder: SshApiSessionFactory.IdentityBuilder? = null
-    private var identity: SshApiSessionFactory.ApiIdentity? = null
     lateinit var settings: SharedPreferences
         private set
     private lateinit var encryptedSettings: SharedPreferences
@@ -74,16 +72,6 @@ abstract class BaseGitActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    @CallSuper
-    override fun onDestroy() {
-        // Do not leak the service connection
-        if (identityBuilder != null) {
-            identityBuilder!!.close()
-            identityBuilder = null
-        }
-        super.onDestroy()
     }
 
     enum class GitUpdateUrlResult(val textRes: Int) {
@@ -158,11 +146,7 @@ abstract class BaseGitActivity : AppCompatActivity() {
     }
 
     /**
-     * Attempt to launch the requested Git operation. Depending on the configured auth, it may not
-     * be possible to launch the operation immediately. In that case, this function may launch an
-     * intermediate activity instead, which will gather necessary information and post it back via
-     * onActivityResult, which will then re-call this function. This may happen multiple times,
-     * until either an error is encountered or the operation is successfully launched.
+     * Attempt to launch the requested Git operation.
      *
      * @param operation The type of git operation to launch
      */
@@ -173,21 +157,6 @@ abstract class BaseGitActivity : AppCompatActivity() {
             return
         }
         try {
-            // Before launching the operation with OpenKeychain auth, we need to issue several requests
-            // to the OpenKeychain API. IdentityBuild will take care of launching the relevant intents,
-            // we just need to keep calling it until it returns a completed ApiIdentity.
-            if (connectionMode == ConnectionMode.OpenKeychain && identity == null) {
-                // Lazy initialization of the IdentityBuilder
-                if (identityBuilder == null) {
-                    identityBuilder = SshApiSessionFactory.IdentityBuilder(this)
-                }
-                // Try to get an ApiIdentity and bail if one is not ready yet. The builder will ensure
-                // that onActivityResult is called with operation again, which will re-invoke us here
-                identity = identityBuilder!!.tryBuild(operation)
-                if (identity == null)
-                    return
-            }
-
             val localDir = requireNotNull(PasswordRepository.getRepositoryDirectory(this))
             val op = when (operation) {
                 REQUEST_CLONE, GitOperation.GET_SSH_KEY_FROM_CLONE -> CloneOperation(localDir, this).setCommand(url!!)
@@ -196,7 +165,6 @@ abstract class BaseGitActivity : AppCompatActivity() {
                 REQUEST_SYNC -> SyncOperation(localDir, this).setCommands()
                 BREAK_OUT_OF_DETACHED -> BreakOutOfDetached(localDir, this).setCommands()
                 REQUEST_RESET -> ResetToRemoteOperation(localDir, this).setCommands()
-                SshApiSessionFactory.POST_SIGNATURE -> return
                 else -> {
                     tag(TAG).e { "Operation not recognized : $operation" }
                     setResult(RESULT_CANCELED)
@@ -204,44 +172,11 @@ abstract class BaseGitActivity : AppCompatActivity() {
                     return
                 }
             }
-            op.executeAfterAuthentication(connectionMode, serverUser, identity)
+            op.executeAfterAuthentication(connectionMode, serverUser)
         } catch (e: Exception) {
             e.printStackTrace()
             MaterialAlertDialogBuilder(this).setMessage(e.message).show()
         }
-    }
-
-    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        // In addition to the pre-operation-launch series of intents for OpenKeychain auth
-        // that will pass through here and back to launchGitOperation, there is one
-        // synchronous operation that happens /after/ the operation has been launched in the
-        // background thread - the actual signing of the SSH challenge. We pass through the
-        // completed signature to the ApiIdentity, which will be blocked in the other thread
-        // waiting for it.
-        if (requestCode == SshApiSessionFactory.POST_SIGNATURE && identity != null) {
-            identity!!.postSignature(data)
-
-            // If the signature failed (usually because it was cancelled), reset state
-            if (data == null) {
-                identity = null
-                identityBuilder = null
-            }
-            return
-        }
-
-        if (resultCode == RESULT_CANCELED) {
-            setResult(RESULT_CANCELED)
-            finish()
-        } else if (resultCode == RESULT_OK) {
-            // If an operation has been re-queued via this mechanism, let the
-            // IdentityBuilder attempt to extract some updated state from the intent before
-            // trying to re-launch the operation.
-            if (identityBuilder != null) {
-                identityBuilder!!.consume(data)
-            }
-            launchGitOperation(requestCode)
-        }
-        super.onActivityResult(requestCode, resultCode, data)
     }
 
     companion object {
