@@ -18,7 +18,7 @@ import com.jcraft.jsch.JSch
 import com.jcraft.jsch.KeyPair
 import com.zeapo.pwdstore.R
 import com.zeapo.pwdstore.databinding.ActivitySshKeygenBinding
-import com.zeapo.pwdstore.utils.getEncryptedPrefs
+import com.zeapo.pwdstore.utils.gitCredentialPrefs
 import com.zeapo.pwdstore.utils.viewBinding
 import java.io.File
 import java.io.FileOutputStream
@@ -83,7 +83,7 @@ class SshKeyGenActivity : AppCompatActivity() {
             e.printStackTrace()
             e
         } finally {
-            getEncryptedPrefs("git_operation").edit {
+            gitCredentialPrefs.edit {
                 remove("ssh_key_local_passphrase")
             }
         }

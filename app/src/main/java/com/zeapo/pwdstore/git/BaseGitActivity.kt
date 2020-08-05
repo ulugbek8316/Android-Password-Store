@@ -27,7 +27,7 @@ import com.zeapo.pwdstore.git.operation.ResetToRemoteOperation
 import com.zeapo.pwdstore.git.operation.SyncOperation
 import com.zeapo.pwdstore.utils.PasswordRepository
 import com.zeapo.pwdstore.utils.PreferenceKeys
-import com.zeapo.pwdstore.utils.getEncryptedPrefs
+import com.zeapo.pwdstore.utils.gitCredentialPrefs
 import java.io.File
 import java.net.URI
 
@@ -49,14 +49,12 @@ abstract class BaseGitActivity : AppCompatActivity() {
     lateinit var branch: String
     lateinit var settings: SharedPreferences
         private set
-    private lateinit var encryptedSettings: SharedPreferences
 
     @CallSuper
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         settings = PreferenceManager.getDefaultSharedPreferences(this)
-        encryptedSettings = getEncryptedPrefs("git_operation")
         protocol = Protocol.fromString(settings.getString(PreferenceKeys.GIT_REMOTE_PROTOCOL, null))
         connectionMode = ConnectionMode.fromString(settings.getString(PreferenceKeys.GIT_REMOTE_AUTH, null))
         serverHostname = settings.getString(PreferenceKeys.GIT_REMOTE_SERVER, null) ?: ""
@@ -143,7 +141,7 @@ abstract class BaseGitActivity : AppCompatActivity() {
             PasswordRepository.addRemote("origin", newUrl, true)
         // When the server changes, remote password and host key file should be deleted.
         if (previousUrl.isNotEmpty() && newUrl != previousUrl) {
-            encryptedSettings.edit { remove(PreferenceKeys.HTTPS_PASSWORD) }
+            gitCredentialPrefs.edit { remove(PreferenceKeys.HTTPS_PASSWORD) }
             File("$filesDir/.host_key").delete()
         }
         url = newUrl

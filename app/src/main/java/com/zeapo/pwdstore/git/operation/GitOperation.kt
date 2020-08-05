@@ -21,7 +21,7 @@ import com.zeapo.pwdstore.git.sshj.SshAuthData
 import com.zeapo.pwdstore.git.sshj.SshjSessionFactory
 import com.zeapo.pwdstore.utils.PasswordRepository
 import com.zeapo.pwdstore.utils.PreferenceKeys
-import com.zeapo.pwdstore.utils.getEncryptedPrefs
+import com.zeapo.pwdstore.utils.gitCredentialPrefs
 import java.io.File
 import net.schmizz.sshj.userauth.password.PasswordFinder
 import org.eclipse.jgit.api.Git
@@ -152,16 +152,13 @@ abstract class GitOperation(gitDir: File, internal val callingActivity: Fragment
     @CallSuper
     open fun onError(err: Exception) {
         // Clear various auth related fields on failure
-        callingActivity.applicationContext
-            .getEncryptedPrefs("git_operation")
-            .edit {
-                remove(PreferenceKeys.SSH_KEY_LOCAL_PASSPHRASE)
-                remove(PreferenceKeys.HTTPS_PASSWORD)
-            }
-        PreferenceManager.getDefaultSharedPreferences(callingActivity.applicationContext)
-            .edit {
-                remove(PreferenceKeys.SSH_OPENKEYSTORE_KEYID)
-            }
+        callingActivity.gitCredentialPrefs.edit {
+            remove(PreferenceKeys.SSH_KEY_LOCAL_PASSPHRASE)
+            remove(PreferenceKeys.HTTPS_PASSWORD)
+        }
+        PreferenceManager.getDefaultSharedPreferences(callingActivity.applicationContext).edit {
+            remove(PreferenceKeys.SSH_OPENKEYSTORE_KEYID)
+        }
         d(err)
         MaterialAlertDialogBuilder(callingActivity)
             .setTitle(callingActivity.resources.getString(R.string.jgit_error_dialog_title))

@@ -17,7 +17,7 @@ import com.google.android.material.textfield.TextInputLayout
 import com.zeapo.pwdstore.R
 import com.zeapo.pwdstore.git.config.ConnectionMode
 import com.zeapo.pwdstore.utils.PreferenceKeys
-import com.zeapo.pwdstore.utils.getEncryptedPrefs
+import com.zeapo.pwdstore.utils.gitCredentialPrefs
 import com.zeapo.pwdstore.utils.requestInputFocusOnView
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -28,7 +28,7 @@ class CredentialFinder(
 ) : InteractivePasswordFinder() {
 
     override fun askForPassword(cont: Continuation<String?>, isRetry: Boolean) {
-        val gitOperationPrefs = callingActivity.getEncryptedPrefs("git_operation")
+        val gitOperationPrefs = callingActivity.gitCredentialPrefs
         val credentialPref: String
         @StringRes val messageRes: Int
         @StringRes val hintRes: Int

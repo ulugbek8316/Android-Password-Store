@@ -52,7 +52,7 @@ import com.zeapo.pwdstore.utils.BiometricAuthenticator
 import com.zeapo.pwdstore.utils.PasswordRepository
 import com.zeapo.pwdstore.utils.PreferenceKeys
 import com.zeapo.pwdstore.utils.autofillManager
-import com.zeapo.pwdstore.utils.getEncryptedPrefs
+import com.zeapo.pwdstore.utils.gitCredentialPrefs
 import java.io.File
 import java.io.IOException
 
@@ -77,7 +77,7 @@ class UserPreference : AppCompatActivity() {
             callingActivity = requireActivity() as UserPreference
             val context = requireContext()
             sharedPreferences = preferenceManager.sharedPreferences
-            encryptedPreferences = requireActivity().applicationContext.getEncryptedPrefs("git_operation")
+            encryptedPreferences = context.gitCredentialPrefs
 
             addPreferencesFromResource(R.xml.preference)
 
@@ -560,7 +560,7 @@ class UserPreference : AppCompatActivity() {
                 val prefs = PreferenceManager.getDefaultSharedPreferences(applicationContext)
 
                 prefs.edit { putBoolean(PreferenceKeys.USE_GENERATED_KEY, false) }
-                getEncryptedPrefs("git_operation").edit { remove(PreferenceKeys.SSH_KEY_LOCAL_PASSPHRASE) }
+                gitCredentialPrefs.edit { remove(PreferenceKeys.SSH_KEY_LOCAL_PASSPHRASE) }
 
                 // Delete the public key from generation
                 File("""$filesDir/.ssh_key.pub""").delete()

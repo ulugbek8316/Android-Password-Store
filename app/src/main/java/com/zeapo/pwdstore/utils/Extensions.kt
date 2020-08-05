@@ -97,6 +97,9 @@ fun Context.getEncryptedPrefs(fileName: String): SharedPreferences {
     )
 }
 
+val Context.gitCredentialPrefs
+    get() = applicationContext.getEncryptedPrefs("git_operation")
+
 suspend fun FragmentActivity.commitChange(
     message: String,
     finishWithResultOnEnd: Intent? = null,
