@@ -77,7 +77,7 @@ class OpenKeychainWrappedSignature(private val wrappedSignature: Signature, priv
         wrappedSignature.sign()
     }
 
-    override fun encode(signature: ByteArray?): ByteArray = if (bridgedPrivateKey != null) {
+    override fun encode(signature: ByteArray?): ByteArray? = if (bridgedPrivateKey != null) {
         require(signature != null) { "OpenKeychain signature must not be null" }
         val encodedSignature = Buffer.PlainBuffer(signature)
         // We need to drop the algorithm name and extract the raw signature since SSHJ adds the name
