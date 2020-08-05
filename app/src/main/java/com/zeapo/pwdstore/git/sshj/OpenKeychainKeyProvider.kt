@@ -9,8 +9,8 @@ import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
+import androidx.fragment.app.FragmentActivity
 import androidx.preference.PreferenceManager
 import com.github.ajalt.timberkt.d
 import com.zeapo.pwdstore.utils.OPENPGP_PROVIDER
@@ -42,7 +42,7 @@ import org.openintents.ssh.authentication.response.Response
 import org.openintents.ssh.authentication.response.SigningResponse
 import org.openintents.ssh.authentication.response.SshPublicKeyResponse
 
-class OpenKeychainKeyProvider(private val activity: AppCompatActivity) : KeyProvider, Closeable {
+class OpenKeychainKeyProvider(private val activity: FragmentActivity) : KeyProvider, Closeable {
 
     private sealed class ApiResponse {
         data class Success(val response: Response) : ApiResponse()

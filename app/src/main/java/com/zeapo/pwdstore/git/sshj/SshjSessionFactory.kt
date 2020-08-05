@@ -6,6 +6,7 @@ package com.zeapo.pwdstore.git.sshj
 
 import android.util.Base64
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentActivity
 import com.github.ajalt.timberkt.d
 import com.github.ajalt.timberkt.w
 import com.zeapo.pwdstore.utils.clear
@@ -51,7 +52,7 @@ sealed class SshAuthData {
         }
     }
 
-    class OpenKeychain(val activity: AppCompatActivity) : SshAuthData() {
+    class OpenKeychain(val activity: FragmentActivity) : SshAuthData() {
 
         override fun clearCredentials() {}
     }
