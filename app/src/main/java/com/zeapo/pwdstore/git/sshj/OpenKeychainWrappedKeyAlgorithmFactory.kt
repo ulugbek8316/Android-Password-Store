@@ -69,7 +69,7 @@ class OpenKeychainWrappedSignature(private val wrappedSignature: Signature, priv
         }
     }
 
-    override fun sign(): ByteArray = if (bridgedPrivateKey != null) {
+    override fun sign(): ByteArray? = if (bridgedPrivateKey != null) {
         runBlocking {
             bridgedPrivateKey!!.sign(data.toByteArray(), hashAlgorithm)
         }
