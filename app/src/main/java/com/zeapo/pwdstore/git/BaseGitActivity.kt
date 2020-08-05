@@ -4,7 +4,6 @@
  */
 package com.zeapo.pwdstore.git
 
-import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.MenuItem
@@ -12,7 +11,6 @@ import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.core.text.isDigitsOnly
-import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import com.github.ajalt.timberkt.Timber.tag
 import com.github.ajalt.timberkt.e
@@ -32,8 +30,6 @@ import com.zeapo.pwdstore.utils.PreferenceKeys
 import com.zeapo.pwdstore.utils.getEncryptedPrefs
 import java.io.File
 import java.net.URI
-import org.openintents.ssh.authentication.SshAuthenticationApi
-import kotlinx.coroutines.launch
 
 /**
  * Abstract AppCompatActivity that holds some information that is commonly shared across git-related

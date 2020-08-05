@@ -1,4 +1,9 @@
-package com.zeapo.pwdstore.git.operation
+/*
+ * Copyright © 2014-2020 The Android Password Store Authors. All Rights Reserved.
+ * SPDX-License-Identifier: GPL-3.0-only
+ */
+
+package com.zeapo.pwdstore.git.sshj
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
@@ -11,7 +16,6 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.zeapo.pwdstore.R
 import com.zeapo.pwdstore.git.config.ConnectionMode
-import com.zeapo.pwdstore.git.sshj.InteractivePasswordFinder
 import com.zeapo.pwdstore.utils.PreferenceKeys
 import com.zeapo.pwdstore.utils.getEncryptedPrefs
 import com.zeapo.pwdstore.utils.requestInputFocusOnView
@@ -20,7 +24,7 @@ import kotlin.coroutines.resume
 
 class CredentialFinder(
     val callingActivity: FragmentActivity,
-    val connectionMode: ConnectionMode
+    private val connectionMode: ConnectionMode
 ) : InteractivePasswordFinder() {
 
     override fun askForPassword(cont: Continuation<String?>, isRetry: Boolean) {

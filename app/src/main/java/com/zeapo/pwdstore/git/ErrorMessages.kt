@@ -28,6 +28,7 @@ sealed class GitException(message: String? = null) : Exception(message) {
      * Encapsulates possible errors from a [org.eclipse.jgit.api.PushCommand].
      */
     class PushException(val reason: Reason, vararg val fmt: String) : GitException() {
+
         enum class Reason {
             NON_FAST_FORWARD,
             REMOTE_REJECTED,

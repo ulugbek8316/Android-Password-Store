@@ -6,7 +6,6 @@ package com.zeapo.pwdstore.git.operation
 
 import android.content.Intent
 import androidx.annotation.CallSuper
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.fragment.app.FragmentActivity
 import androidx.preference.PreferenceManager
@@ -16,6 +15,7 @@ import com.zeapo.pwdstore.R
 import com.zeapo.pwdstore.UserPreference
 import com.zeapo.pwdstore.git.ErrorMessages
 import com.zeapo.pwdstore.git.config.ConnectionMode
+import com.zeapo.pwdstore.git.sshj.CredentialFinder
 import com.zeapo.pwdstore.git.sshj.InteractivePasswordFinder
 import com.zeapo.pwdstore.git.sshj.SshAuthData
 import com.zeapo.pwdstore.git.sshj.SshjSessionFactory
