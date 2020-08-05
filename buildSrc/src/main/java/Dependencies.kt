@@ -48,8 +48,10 @@ object Dependencies {
 
     object ThirdParty {
 
-        const val bouncycastle = "org.bouncycastle:bcprov-jdk15on:1.66"
+        const val bouncycastle_bcprov = "org.bouncycastle:bcprov-jdk15on:1.66"
+        const val bouncycastle_bcpkix = "org.bouncycastle:bcpkix-jdk15on:1.65"
         const val commons_codec = "commons-codec:commons-codec:1.14"
+        const val eddsa = "net.i2p.crypto:eddsa:0.3.0"
         const val fastscroll = "me.zhanghai.android.fastscroll:library:1.1.4"
         const val jsch = "com.jcraft:jsch:0.1.55"
         const val jgit = "org.eclipse.jgit:org.eclipse.jgit:3.7.1.201504261725-r"

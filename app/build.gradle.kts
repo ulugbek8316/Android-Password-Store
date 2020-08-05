@@ -117,9 +117,9 @@ dependencies {
     }
     implementation(Dependencies.ThirdParty.jsch)
     implementation(files("../libs/sshj-0.29.1-SNAPSHOT.jar"))
-    implementation("org.bouncycastle:bcpkix-jdk15on:1.65")
-    implementation("net.i2p.crypto:eddsa:0.3.0")
-    implementation(Dependencies.ThirdParty.bouncycastle)
+    implementation(Dependencies.ThirdParty.bouncycastle_bcpkix)
+    implementation(Dependencies.ThirdParty.bouncycastle_bcprov)
+    implementation(Dependencies.ThirdParty.eddsa)
     implementation(Dependencies.ThirdParty.plumber)
     implementation(Dependencies.ThirdParty.ssh_auth)
     implementation(Dependencies.ThirdParty.timber)
