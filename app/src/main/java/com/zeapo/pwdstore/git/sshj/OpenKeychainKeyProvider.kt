@@ -42,7 +42,13 @@ import org.openintents.ssh.authentication.response.Response
 import org.openintents.ssh.authentication.response.SigningResponse
 import org.openintents.ssh.authentication.response.SshPublicKeyResponse
 
-class OpenKeychainKeyProvider(private val activity: FragmentActivity) : KeyProvider, Closeable {
+class OpenKeychainKeyProvider private constructor(private val activity: FragmentActivity) : KeyProvider, Closeable {
+
+    companion object {
+        suspend fun prepareAndUse(activity: FragmentActivity, block: (provider: OpenKeychainKeyProvider) -> Unit) {
+            OpenKeychainKeyProvider(activity).prepareAndUse(block)
+        }
+    }
 
     private sealed class ApiResponse {
         data class Success(val response: Response) : ApiResponse()
@@ -68,7 +74,7 @@ class OpenKeychainKeyProvider(private val activity: FragmentActivity) : KeyProvi
     private var publicKey: PublicKey? = null
     private var privateKey: OpenKeychainPrivateKey? = null
 
-    suspend fun prepareAndUse(block: (provider: OpenKeychainKeyProvider) -> Unit) {
+    private suspend fun prepareAndUse(block: (provider: OpenKeychainKeyProvider) -> Unit) {
         prepare()
         use(block)
     }

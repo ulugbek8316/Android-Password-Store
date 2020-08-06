@@ -169,7 +169,7 @@ private class SshjSession(uri: URIish, private val username: String, private val
             }
             is SshAuthData.OpenKeychain -> {
                 runBlocking {
-                    OpenKeychainKeyProvider(authData.activity).prepareAndUse { provider ->
+                    OpenKeychainKeyProvider.prepareAndUse(authData.activity) { provider ->
                         ssh.authPublickey(username, provider)
                     }
                 }
