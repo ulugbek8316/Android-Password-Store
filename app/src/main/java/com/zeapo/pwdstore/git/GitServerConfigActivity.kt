@@ -10,6 +10,7 @@ import android.view.View
 import androidx.core.content.edit
 import androidx.core.os.postDelayed
 import androidx.core.widget.doOnTextChanged
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.zeapo.pwdstore.R
@@ -20,6 +21,7 @@ import com.zeapo.pwdstore.utils.PasswordRepository
 import com.zeapo.pwdstore.utils.PreferenceKeys
 import com.zeapo.pwdstore.utils.viewBinding
 import java.io.IOException
+import kotlinx.coroutines.launch
 
 /**
  * Activity that encompasses both the initial clone as well as editing the server config for future
@@ -102,6 +104,13 @@ class GitServerConfigActivity : BaseGitActivity() {
             }
         }
 
+        binding.serverBranch.apply {
+            setText(branch)
+            doOnTextChanged { text, _, _, _ ->
+                branch = text.toString().trim()
+            }
+        }
+
         binding.saveButton.setOnClickListener {
             if (isClone && PasswordRepository.getRepository(null) == null)
                 PasswordRepository.initialize(this)
@@ -114,12 +123,14 @@ class GitServerConfigActivity : BaseGitActivity() {
                         putString(PreferenceKeys.GIT_REMOTE_PORT, serverPort)
                         putString(PreferenceKeys.GIT_REMOTE_USERNAME, serverUser)
                         putString(PreferenceKeys.GIT_REMOTE_LOCATION, serverPath)
+                        putString(PreferenceKeys.GIT_BRANCH_NAME, branch)
                     }
                     if (!isClone) {
                         Snackbar.make(binding.root, getString(R.string.git_server_config_save_success), Snackbar.LENGTH_SHORT).show()
                         Handler().postDelayed(500) { finish() }
-                    } else
+                    } else {
                         cloneRepository()
+                    }
                 }
                 else -> Snackbar.make(binding.root, getString(R.string.git_server_config_save_error_prefix, getString(result.textRes)), Snackbar.LENGTH_LONG).show()
             }
@@ -157,12 +168,12 @@ class GitServerConfigActivity : BaseGitActivity() {
             !(localDirFiles.size == 1 && localDirFiles[0].name == ".git")) {
             MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.dialog_delete_title)
-                .setMessage(resources.getString(R.string.dialog_delete_msg) + " " + localDir.toString())
+                .setMessage(resources.getString(R.string.dialog_delete_msg, localDir.toString()))
                 .setCancelable(false)
                 .setPositiveButton(R.string.dialog_delete) { dialog, _ ->
                     try {
                         localDir.deleteRecursively()
-                        launchGitOperation(REQUEST_CLONE)
+                        lifecycleScope.launch { launchGitOperation(REQUEST_CLONE) }
                     } catch (e: IOException) {
                         // TODO Handle the exception correctly if we are unable to delete the directory...
                         e.printStackTrace()
@@ -192,7 +203,7 @@ class GitServerConfigActivity : BaseGitActivity() {
                 e.printStackTrace()
                 MaterialAlertDialogBuilder(this).setMessage(e.message).show()
             }
-            launchGitOperation(REQUEST_CLONE)
+            lifecycleScope.launch { launchGitOperation(REQUEST_CLONE) }
         }
     }
 }

@@ -11,7 +11,6 @@ import android.text.InputType
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult
@@ -59,7 +58,7 @@ class PasswordCreationActivity : BasePgpActivity(), OpenPgpServiceConnection.OnB
     private var oldCategory: String? = null
     private var copy: Boolean = false
 
-    private val userInteractionRequiredResult: ActivityResultLauncher<IntentSenderRequest> = registerForActivityResult(StartIntentSenderForResult()) { result ->
+    private val userInteractionRequiredResult = registerForActivityResult(StartIntentSenderForResult()) { result ->
         if (result.data == null) {
             setResult(RESULT_CANCELED, null)
             finish()
@@ -177,13 +176,11 @@ class PasswordCreationActivity : BasePgpActivity(), OpenPgpServiceConnection.OnB
                                 extraContent.setText(entry.extraContentWithoutAuthData)
                             }
                         }
-                        updateViewState()
                     }
                 }
                 listOf(filename, extraContent).forEach {
                     it.doOnTextChanged { _, _, _, _ -> updateViewState() }
                 }
-                updateViewState()
             }
             suggestedPass?.let {
                 password.setText(it)
@@ -195,6 +192,7 @@ class PasswordCreationActivity : BasePgpActivity(), OpenPgpServiceConnection.OnB
                 password.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
             }
         }
+        updateViewState()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -235,7 +233,7 @@ class PasswordCreationActivity : BasePgpActivity(), OpenPgpServiceConnection.OnB
         val entry = PasswordEntry("PLACEHOLDER\n${extraContent.text}")
         encryptUsername.apply {
             if (visibility != View.VISIBLE)
-                return@with
+                return@apply
             val hasUsernameInFileName = filename.text.toString().isNotBlank()
             val hasUsernameInExtras = entry.hasUsername()
             isEnabled = hasUsernameInFileName xor hasUsernameInExtras
@@ -316,7 +314,11 @@ class PasswordCreationActivity : BasePgpActivity(), OpenPgpServiceConnection.OnB
                 .filter { it.isNotBlank() }
                 .map { line ->
                     parseGpgIdentifier(line) ?: run {
-                        snackbar(message = resources.getString(R.string.invalid_gpg_id))
+                        if (line.removePrefix("0x").matches("[a-fA-F0-9]{8}".toRegex())) {
+                            snackbar(message = resources.getString(R.string.short_key_ids_unsupported))
+                        } else {
+                            snackbar(message = resources.getString(R.string.invalid_gpg_id))
+                        }
                         return@with
                     }
                 }
@@ -327,12 +329,14 @@ class PasswordCreationActivity : BasePgpActivity(), OpenPgpServiceConnection.OnB
                             gpgIdentifierFile.writeText(keyIds.joinToString("\n"))
                             val repo = PasswordRepository.getRepository(null)
                             if (repo != null) {
-                                commitChange(
-                                    getString(
-                                        R.string.git_commit_gpg_id,
-                                        getLongName(gpgIdentifierFile.parentFile!!.absolutePath, repoPath, gpgIdentifierFile.name)
+                                lifecycleScope.launch {
+                                    commitChange(
+                                        getString(
+                                            R.string.git_commit_gpg_id,
+                                            getLongName(gpgIdentifierFile.parentFile!!.absolutePath, repoPath, gpgIdentifierFile.name)
+                                        )
                                     )
-                                )
+                                }
                             }
                             encrypt(data)
                         }
@@ -420,7 +424,7 @@ class PasswordCreationActivity : BasePgpActivity(), OpenPgpServiceConnection.OnB
                                         AutofillPreferences.directoryStructure(applicationContext)
                                     val entry = PasswordEntry(content)
                                     returnIntent.putExtra(RETURN_EXTRA_PASSWORD, entry.password)
-                                    val username = PasswordEntry(content).username
+                                    val username = entry.username
                                         ?: directoryStructure.getUsernameFor(file)
                                     returnIntent.putExtra(RETURN_EXTRA_USERNAME, username)
                                 }
@@ -429,12 +433,14 @@ class PasswordCreationActivity : BasePgpActivity(), OpenPgpServiceConnection.OnB
                                 if (repo != null) {
                                     val status = Git(repo).status().call()
                                     if (status.modified.isNotEmpty()) {
-                                        commitChange(
-                                            getString(
-                                                R.string.git_commit_edit_text,
-                                                getLongName(fullPath, repoPath, editName)
+                                        lifecycleScope.launch {
+                                            commitChange(
+                                                getString(
+                                                    R.string.git_commit_edit_text,
+                                                    getLongName(fullPath, repoPath, editName)
+                                                )
                                             )
-                                        )
+                                        }
                                     }
                                 }
 

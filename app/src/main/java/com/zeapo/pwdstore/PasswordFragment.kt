@@ -18,9 +18,8 @@ import androidx.activity.result.contract.ActivityResultContracts.StartActivityFo
 import androidx.appcompat.view.ActionMode
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.setFragmentResultListener
-import androidx.lifecycle.observe
 import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.zeapo.pwdstore.databinding.PasswordRecyclerViewBinding
@@ -125,6 +124,7 @@ class PasswordFragment : Fragment(R.layout.password_recycler_view) {
             }
         val recyclerView = binding.passRecycler
         recyclerView.apply {
+            addItemDecoration(DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL))
             layoutManager = LinearLayoutManager(requireContext())
             itemAnimator = OnOffItemAnimator()
             adapter = recyclerAdapter
